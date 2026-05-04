@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAT Vocab – First 100 Words</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --card: #1e2130;
+    --border: #2a2f45;
+    --gold: #c9a84c;
+    --gold-light: #e8c87a;
+    --text: #e8e4d9;
+    --muted: #7a7f99;
+    --green: #4caf7d;
+    --red: #e05c5c;
+    --blue: #5b8dee;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ---- background texture ---- */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(201,168,76,.07) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 80% 90%, rgba(91,141,238,.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* ---- header ---- */
+  header {
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p { color: var(--muted); margin-top: 6px; font-size: .95rem; }
+
+  /* ---- nav tabs ---- */
+  .tabs {
+    display: flex; justify-content: center; gap: 8px;
+    margin: 24px 20px 0;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 10px 22px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: all .2s;
+  }
+  .tab-btn.active, .tab-btn:hover {
+    background: var(--gold);
+    color: #0d0f14;
+    border-color: var(--gold);
+  }
+
+  /* ---- progress bar ---- */
+  .progress-wrap {
+    max-width: 640px;
+    margin: 20px auto 0;
+    padding: 0 20px;
+  }
+  .progress-info {
+    display: flex; justify-content: space-between;
+    font-size: .82rem; color: var(--muted); margin-bottom: 6px;
+  }
+  .progress-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 4px;
+    transition: width .4s ease;
+  }
+
+  /* ---- panels ---- */
+  .panel { display: none; padding: 30px 20px 60px; }
+  .panel.active { display: block; }
+
+  /* ======== FLASHCARD MODE ======== */
+  #flashcard-panel { max-width: 640px; margin: 0 auto; }
+
+  .fc-scene {
+    perspective: 1200px;
+    height: 320px;
+    cursor: pointer;
+    margin-bottom: 24px;
+  }
+  .fc-card {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.4,0,.2,1);
+    border-radius: 20px;
+  }
+  .fc-card.flipped { transform: rotateY(180deg); }
+
+  .fc-face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    text-align: center;
+  }
+  .fc-front {
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 60px rgba(0,0,0,.4);
+  }
+  .fc-back {
+    background: linear-gradient(145deg, #1e2540, #1a1e30);
+    border: 1px solid #35406a;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    transform: rotateY(180deg);
+  }
+
+  .fc-num {
+    font-size: .75rem;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .fc-word {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 7vw, 3.2rem);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .fc-pos {
+    margin-top: 10px;
+    font-size: .8rem;
+    color: var(--muted);
+    background: var(--border);
+    padding: 3px 12px;
+    border-radius: 50px;
+  }
+  .fc-tap { margin-top: 20px; font-size: .8rem; color: var(--muted); }
+  .fc-tap span { color: var(--gold); }
+
+  .fc-back .fc-def {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .fc-back .fc-example {
+    font-style: italic;
+    font-size: .88rem;
+    color: var(--muted);
+    border-left: 3px solid var(--gold);
+    padding-left: 12px;
+    text-align: left;
+    width: 100%;
+  }
+
+  .fc-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+  }
+  .fc-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 28px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .95rem;
+    font-weight: 500;
+    transition: all .2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .fc-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .fc-btn.primary {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #0d0f14;
+    font-weight: 600;
+  }
+  .fc-btn.primary:hover { background: var(--gold-light); }
+
+  .know-btns { display: flex; gap: 12px; margin-top: 16px; justify-content: center; }
+  .know-btn {
+    flex: 1; max-width: 180px;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    font-weight: 600;
+    transition: all .2s;
+  }
+  .know-btn.yes { background: rgba(76,175,125,.15); color: var(--green); border: 1px solid rgba(76,175,125,.3); }
+  .know-btn.no  { background: rgba(224,92,92,.12);  color: var(--red);   border: 1px solid rgba(224,92,92,.25); }
+  .know-btn.yes:hover { background: rgba(76,175,125,.3); }
+  .know-btn.no:hover  { background: rgba(224,92,92,.25); }
+  .know-btns-label { text-align: center; font-size: .8rem; color: var(--muted); margin-top: 10px; }
+
+  /* ======== QUIZ MODE ======== */
+  #quiz-panel { max-width: 640px; margin: 0 auto; }
+
+  .quiz-q {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 20px;
+    box-shadow: 0 16px 50px rgba(0,0,0,.35);
+  }
+  .quiz-label { font-size: .75rem; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .quiz-prompt { font-size: 1.05rem; line-height: 1.6; color: var(--text); }
+  .quiz-prompt strong {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    display: block;
+    margin-top: 8px;
+  }
+
+  .quiz-options { display: grid; gap: 10px; }
+  .quiz-opt {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    padding: 14px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .95rem;
+    text-align: left;
+    transition: all .18s;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+  .quiz-opt.correct { border-color: var(--green); background: rgba(76,175,125,.12); color: var(--green); }
+  .quiz-opt.wrong   { border-color: var(--red);   background: rgba(224,92,92,.1);   color: var(--red); }
+  .quiz-opt:disabled { cursor: default; }
+
+  .opt-letter {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem; font-weight: 700;
+    flex-shrink: 0;
+    transition: all .18s;
+  }
+  .quiz-opt.correct .opt-letter { background: var(--green); color: #fff; }
+  .quiz-opt.wrong   .opt-letter { background: var(--red);   color: #fff; }
+
+  .quiz-feedback {
+    margin-top: 16px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: .9rem;
+    line-height: 1.5;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.ok { background: rgba(76,175,125,.1); border: 1px solid rgba(76,175,125,.3); color: var(--green); }
+  .quiz-feedback.err { background: rgba(224,92,92,.08); border: 1px solid rgba(224,92,92,.2); color: #f08080; }
+
+  .quiz-next {
+    width: 100%;
+    background: var(--gold);
+    border: none;
+    color: #0d0f14;
+    padding: 14px;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 14px;
+    transition: all .2s;
+    display: none;
+  }
+  .quiz-next.show { display: block; }
+  .quiz-next:hover { background: var(--gold-light); }
+
+  /* quiz score screen */
+  .score-screen {
+    text-align: center; padding: 40px 20px;
+    display: none;
+  }
+  .score-screen.show { display: block; }
+  .score-ring {
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: conic-gradient(var(--gold) calc(var(--pct) * 1%), var(--border) 0%);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--gold-light);
+    position: relative;
+  }
+  .score-ring::before {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+  }
+  .score-ring span { position: relative; z-index: 1; }
+  .score-screen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; color: var(--text); margin-bottom: 8px;
+  }
+  .score-screen p { color: var(--muted); margin-bottom: 28px; }
+
+  /* ======== WORD LIST ======== */
+  #list-panel { max-width: 760px; margin: 0 auto; }
+  .search-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex; align-items: center;
+    padding: 0 16px;
+    margin-bottom: 20px;
+    gap: 10px;
+  }
+  .search-bar input {
+    background: transparent; border: none; outline: none;
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: .95rem; padding: 14px 0; flex: 1;
+  }
+  .search-bar input::placeholder { color: var(--muted); }
+  .search-icon { color: var(--muted); font-size: 1.1rem; }
+
+  .word-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .word-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .word-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+  .word-card .wc-num { font-size: .72rem; color: var(--gold); font-weight: 600; }
+  .word-card .wc-word {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem; font-weight: 700; margin-top: 2px; color: var(--text);
+  }
+  .word-card .wc-pos { font-size: .75rem; color: var(--muted); margin-top: 3px; }
+  .word-card.known { border-color: rgba(76,175,125,.4); }
+  .word-card.known .wc-word { color: var(--green); }
+
+  /* detail modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.75);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 20px;
+    display: none;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    max-width: 520px; width: 100%;
+    padding: 32px;
+    position: relative;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: var(--border); border: none; color: var(--text);
+    width: 32px; height: 32px; border-radius: 50%;
+    cursor: pointer; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .modal-close:hover { background: var(--muted); }
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; color: var(--gold-light); margin-bottom: 4px;
+  }
+  .modal .m-pos { color: var(--muted); font-size: .85rem; margin-bottom: 20px; }
+  .modal .m-def { margin-bottom: 16px; }
+  .modal .m-def-num { font-size: .75rem; color: var(--gold); font-weight: 600; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .modal .m-def-text { font-size: .95rem; line-height: 1.6; }
+  .modal .m-example { font-style: italic; color: var(--muted); font-size: .88rem; margin-top: 6px; }
+
+  /* stats bar */
+  .stats-row {
+    display: flex; gap: 16px; justify-content: center;
+    margin: 0 20px 24px; flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 18px;
+    font-size: .85rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .stat-chip .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  /* keyboard hint */
+  .kbd-hint {
+    text-align: center; font-size: .78rem; color: var(--muted);
+    margin-top: 14px;
+  }
+  .kbd { background: var(--border); padding: 2px 7px; border-radius: 4px; font-family: monospace; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SAT Vocabulary · First 100</h1>
+  <p>by Farangiz Murodiy — master every word before test day</p>
+</header>
+
+<div class="stats-row">
+  <div class="stat-chip"><span class="dot" style="background:var(--gold)"></span><span id="stat-total">100 words</span></div>
+  <div class="stat-chip"><span class="dot" style="background:var(--green)"></span><span id="stat-known">0 known</span></div>
+  <div class="stat-chip"><span class="dot" style="background:var(--blue)"></span><span id="stat-quiz">0 quizzed</span></div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('flashcard')">📇 Flashcards</button>
+  <button class="tab-btn" onclick="switchTab('quiz')">🧠 Quiz</button>
+  <button class="tab-btn" onclick="switchTab('list')">📋 Word List</button>
+</div>
+
+<!-- FLASHCARD PANEL -->
+<div class="panel active" id="flashcard-panel">
+  <div class="progress-wrap">
+    <div class="progress-info">
+      <span id="fc-counter">1 / 100</span>
+      <span id="fc-pct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="fc-bar" style="width:1%"></div></div>
+  </div>
+
+  <div style="max-width:640px;margin:24px auto 0">
+    <div class="fc-scene" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-num" id="fc-num">WORD 01</div>
+          <div class="fc-word" id="fc-word">Demand</div>
+          <div class="fc-pos" id="fc-pos">verb / noun</div>
+          <div class="fc-tap">tap to reveal → <span>definition</span></div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-def" id="fc-def">To ask for something forcefully, claiming a right to it.</div>
+          <div class="fc-example" id="fc-example">She demanded a refund for the faulty product.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fc-controls">
+      <button class="fc-btn" onclick="navigate(-1)">← Prev</button>
+      <button class="fc-btn primary" onclick="flipCard()">Flip</button>
+      <button class="fc-btn" onclick="navigate(1)">Next →</button>
+    </div>
+    <p class="kbd-hint"><kbd class="kbd">←</kbd> prev &nbsp;·&nbsp; <kbd class="kbd">Space</kbd> flip &nbsp;·&nbsp; <kbd class="kbd">→</kbd> next</p>
+
+    <div class="know-btns-label">Did you know this word?</div>
+    <div class="know-btns">
+      <button class="know-btn no" onclick="markKnown(false)">✗ Still Learning</button>
+      <button class="know-btn yes" onclick="markKnown(true)">✓ I Know It</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ PANEL -->
+<div class="panel" id="quiz-panel">
+  <div class="progress-wrap">
+    <div class="progress-info">
+      <span id="q-counter">Question 1 / 100</span>
+      <span id="q-score">Score: 0</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="q-bar" style="width:1%"></div></div>
+  </div>
+
+  <div style="max-width:640px;margin:20px auto 0">
+    <div id="quiz-main">
+      <div class="quiz-q">
+        <div class="quiz-label" id="q-label">Definition → Word</div>
+        <div class="quiz-prompt" id="q-prompt">Loading…</div>
+      </div>
+      <div class="quiz-options" id="q-opts"></div>
+      <div class="quiz-feedback" id="q-feedback"></div>
+      <button class="quiz-next" id="q-next" onclick="nextQuestion()">Next Question →</button>
+    </div>
+    <div class="score-screen" id="score-screen">
+      <div class="score-ring" id="score-ring" style="--pct:0"><span id="score-pct">0%</span></div>
+      <h2 id="score-title">Quiz Complete!</h2>
+      <p id="score-msg"></p>
+      <button class="fc-btn primary" onclick="restartQuiz()" style="margin:0 auto">🔄 Retake Quiz</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIST PANEL -->
+<div class="panel" id="list-panel">
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search-input" placeholder="Search words…" oninput="filterWords()">
+  </div>
+  <div class="word-grid" id="word-grid"></div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">✕</button>
+    <h2 id="m-word"></h2>
+    <div class="m-pos" id="m-pos"></div>
+    <div id="m-defs"></div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const WORDS = [
+  { word:"Demand", pos:"verb / noun", defs:["To ask for something forcefully, claiming a right to it or expressing a need for it.","The desire or need for something, accompanied by willingness to pay for it."], ex:["She demanded a refund for the faulty product.","There is a high demand for organic food."] },
+  { word:"Speculate", pos:"verb", defs:["To consider or discuss something based on incomplete or uncertain evidence.","To engage in investment or financial trading with the hope of profit but risk of loss."], ex:["Journalists speculated about the election outcome.","Some investors speculate on the stock market."] },
+  { word:"Doubt", pos:"verb / noun", defs:["To feel uncertain or unsure about something or someone.","A feeling of uncertainty or lack of conviction."], ex:["I doubt whether he will arrive on time.","She always had a nagging doubt about her abilities."] },
+  { word:"Establish", pos:"verb", defs:["To set up or create something, typically an organization, system, or rule.","To prove or demonstrate something to be true or valid."], ex:["The government established a committee to investigate.","The study establishes a link between smoking and cancer."] },
+  { word:"Impartial", pos:"adjective", defs:["Treating all people and groups equally, without bias or favoritism.","Not influenced by personal feelings, opinions, or prejudices."], ex:["The judge was praised for being impartial.","The journalist strived for impartial reporting."] },
+  { word:"Offhand", pos:"adverb / adjective", defs:["Without previous thought or preparation; casually.","Showing a casual or indifferent attitude; lacking consideration."], ex:["He answered the question offhand without references.","Her offhand remarks offended some audience members."] },
+  { word:"Persistent", pos:"adjective", defs:["Continuing to exist or endure despite obstacles or setbacks.","Determined or tenacious in achieving a goal; not giving up easily."], ex:["The persistent rain caused flooding.","The persistent student mastered the subject."] },
+  { word:"Mandatory", pos:"adjective", defs:["Required by law or rules; obligatory.","Necessary or essential."], ex:["Wearing a seatbelt is mandatory while driving.","Attendance at the meeting is mandatory."] },
+  { word:"Circumvent", pos:"verb", defs:["To find a way to avoid or bypass something, especially a rule or restriction.","To overcome or defeat an obstacle cleverly."], ex:["They found a loophole to circumvent tax regulations.","Her agility helped her circumvent the opponent's defense."] },
+  { word:"Eclipse", pos:"noun / verb", defs:["An event in which one celestial object passes in front of another, blocking its light.","To overshadow or surpass something in importance or fame."], ex:["The solar eclipse drew crowds of spectators.","The new superstar eclipsed the previous record holder."] },
+  { word:"Fabricate", pos:"verb", defs:["To invent or create something, typically with deceitful intent.","To construct or manufacture something using various materials."], ex:["The witness admitted to fabricating the story.","The carpenter fabricated a beautiful wooden table."] },
+  { word:"Exemplify", pos:"verb", defs:["To serve as an example of something or to illustrate a particular quality."], ex:["The entrepreneur exemplifies dedication and hard work."] },
+  { word:"Discernible", pos:"adjective", defs:["Able to be perceived, recognized, or understood with effort.","Clear or distinguishable."], ex:["There was a discernible outline of a figure in the distance.","The difference in quality was discernible even to an untrained eye."] },
+  { word:"Straightforward", pos:"adjective", defs:["Simple, clear, and easy to understand or follow.","Direct and honest in behavior or communication."], ex:["The assembly instructions were straightforward.","I appreciate her straightforward approach to problem-solving."] },
+  { word:"Inconclusive", pos:"adjective", defs:["Not providing a definite or decisive result or outcome.","Not leading to a resolution or decision."], ex:["The experiment yielded inconclusive results.","The meeting ended inconclusively with no consensus."] },
+  { word:"Unbiased", pos:"adjective", defs:["Not having preconceived opinions; fair and impartial.","Not influenced by personal feelings or external factors."], ex:["The journalist reported the news in an unbiased manner.","The study used unbiased data collection methods."] },
+  { word:"Synchronization", pos:"noun", defs:["The process of coordinating different elements to occur simultaneously.","The matching of timing or rhythm of electronic devices or systems."], ex:["Dancers practiced for perfect synchronization.","The software allows synchronization across multiple devices."] },
+  { word:"Hibernation", pos:"noun", defs:["A state of inactivity in animals during which metabolic rate slows, typically in winter.","A period of rest or withdrawal from normal activities."], ex:["Bears go into hibernation during winter.","I decided to have a weekend of hibernation, staying indoors."] },
+  { word:"Prediction", pos:"noun", defs:["A statement about something that may happen in the future, based on knowledge or analysis.","The act or process of making such statements."], ex:["The weather forecast includes a prediction of rain.","The economist's predictions about the stock market proved accurate."] },
+  { word:"Moderation", pos:"noun", defs:["The quality of being moderate, balanced, or within reasonable limits.","The act of avoiding excess or extremes."], ex:["Enjoying dessert in moderation is key.","The moderator ensures discussions are conducted with civility."] },
+  { word:"Repudiate", pos:"verb", defs:["To refuse to accept or support something, or to state that something is not true.","To refuse to be connected with or accept responsibility for something."], ex:["He repudiated all accusations of wrongdoing.","The company repudiated the actions of its former CEO."] },
+  { word:"Proclaim", pos:"verb", defs:["To announce something publicly or officially, especially something important.","To state or declare something in a firm and emphatic manner."], ex:["The president proclaimed a national day of mourning.","She proclaimed her love for him in front of everyone."] },
+  { word:"Foretell", pos:"verb", defs:["To predict or prophesy future events or outcomes.","To indicate or be a sign of something that will happen in the future."], ex:["The fortune teller foretold she would meet someone special.","The dark clouds foretold an incoming storm."] },
+  { word:"Recant", pos:"verb", defs:["To publicly withdraw or take back a previously held belief or statement, especially under pressure.","To renounce or disavow a previously held position."], ex:["The politician recanted his controversial statement.","The scientist recanted his earlier theory after new evidence emerged."] },
+  { word:"Unpredictable", pos:"adjective", defs:["Not able to be predicted or anticipated; uncertain or erratic.","Lacking a pattern or regularity; inconsistent."], ex:["The stock market is often unpredictable.","His moods were unpredictable; one moment happy, the next angry."] },
+  { word:"Important", pos:"adjective", defs:["Having great significance, value, or influence; crucial or essential.","Carrying weight or significance; deserving attention or consideration."], ex:["Education is an important factor in personal development.","It's important to take care of your health."] },
+  { word:"Secretive", pos:"adjective", defs:["Inclined to keep secrets or conceal information; not open or forthcoming.","Characterized by an atmosphere of secrecy or confidentiality."], ex:["The company's secretive approach led to speculation.","The spy conducted operations in a secretive manner."] },
+  { word:"Ordinary", pos:"adjective", defs:["Having no special or distinctive features; common, usual, or average.","Not exceptional or extraordinary; unremarkable."], ex:["He led an ordinary life with a regular job.","The restaurant served ordinary food at affordable prices."] },
+  { word:"Delegate", pos:"verb / noun", defs:["To entrust or assign responsibility, authority, or power to another person.","To authorize or send a representative to act on behalf of a larger group."], ex:["The manager delegated the task to his assistant.","Government delegates attended the international summit."] },
+  { word:"Compose", pos:"verb", defs:["To create or write a piece of music, literature, or poetry.","To form or constitute something by combining various elements or parts."], ex:["The musician composed a beautiful symphony.","The painting was composed of bold colors and abstract shapes."] },
+  { word:"Interpret", pos:"verb", defs:["To explain or understand the meaning of something, often through analysis.","To perceive or represent something in a particular way; to construe."], ex:["The interpreter helped translate the foreign speaker's words.","Different individuals may interpret the same artwork differently."] },
+  { word:"Renounce", pos:"verb", defs:["To publicly or formally give up a claim, belief, or right.","To refuse or reject something, especially in a formal manner."], ex:["She decided to renounce her citizenship.","The athlete renounced the sponsorship deal due to unethical practices."] },
+  { word:"Catastrophic", pos:"adjective", defs:["Involving or causing great damage, suffering, or destruction.","Extremely unsuccessful or disastrous."], ex:["The earthquake had a catastrophic impact on the city.","The company's decision led to a catastrophic financial loss."] },
+  { word:"Elusive", pos:"adjective", defs:["Difficult to find, achieve, or capture due to evasiveness.","Hard to remember or recall; slipping from memory."], ex:["The rare bird proved to be elusive.","The elusive details of the dream left her uneasy."] },
+  { word:"Abrupt", pos:"adjective", defs:["Sudden and unexpected, often involving an immediate change.","Rudely curt or brusque in manner or speech."], ex:["The abrupt change in weather caught everyone by surprise.","The supervisor's abrupt response left a negative impression."] },
+  { word:"Imminent", pos:"adjective", defs:["About to happen or occur very soon, typically something significant.","Likely to occur at any moment; impending."], ex:["Storm clouds gathered, indicating a thunderstorm was imminent.","A breakthrough in negotiations seemed imminent."] },
+  { word:"Waive", pos:"verb", defs:["To voluntarily relinquish or give up a right, claim, or privilege.","To refrain from insisting on or demanding something."], ex:["The athlete waived his appearance fee for charity.","The teacher waived the homework assignment due to the school closure."] },
+  { word:"Concede", pos:"verb", defs:["To admit or acknowledge something is true after initially denying it.","To yield or surrender in a contest, competition, or conflict."], ex:["The politician conceded that his opponent's argument had merit.","Realizing defeat, the team conceded the match."] },
+  { word:"Refute", pos:"verb", defs:["To prove a statement, argument, or theory to be false by providing evidence.","To deny or reject the validity or truthfulness of something."], ex:["The scientist presented a study that refuted the accepted hypothesis.","The author published a book to refute misconceptions about climate change."] },
+  { word:"Require", pos:"verb", defs:["To need or demand something as necessary, essential, or obligatory.","To instruct or order someone to do something."], ex:["The job posting required a bachelor's degree.","The teacher required students to submit assignments by Friday."] },
+  { word:"Replicable", pos:"adjective", defs:["Capable of being replicated or reproduced; able to be repeated or copied.","Corresponding to a previous outcome when repeated under similar conditions."], ex:["The experiment was designed to be replicable.","The study's findings were highly replicable across different researchers."] },
+  { word:"Predetermined", pos:"adjective", defs:["Decided or established in advance; prearranged or predestined.","Influenced or determined beforehand by factors or circumstances."], ex:["The conference schedule was predetermined.","The outcome seemed predetermined given the skill level difference."] },
+  { word:"Operative", pos:"adjective / noun", defs:["Having the power to produce an effect or intended result.","A person who works for an organization, especially undercover."], ex:["The new security measures proved highly operative.","The detective sent an operative to gather information."] },
+  { word:"Latent", pos:"adjective", defs:["Existing but not yet developed, visible, or active.","A characteristic or quality that is present but not readily apparent."], ex:["The artist's talent lay latent until she discovered painting.","The latent potential became evident when she launched her startup."] },
+  { word:"Consistent with", pos:"phrase", defs:["In agreement or harmony with something; conforming to or matching.","Compatible or not conflicting with other facts or statements."], ex:["Her actions were consistent with her principles of honesty.","The witness's testimony was consistent with the evidence."] },
+  { word:"Representative of", pos:"phrase", defs:["Typical or characteristic of a particular group, organization, or category.","Serving as a symbol or embodiment of something."], ex:["The painting is representative of the artist's style.","The national flag is representative of the country's identity."] },
+  { word:"Overshadowed by", pos:"phrase", defs:["Cast in shadow, made to appear less significant or prominent by something else.","Outshone or surpassed by someone or something else."], ex:["The older sibling's achievements were overshadowed by the younger's success.","The actress's performance was overshadowed by the special effects."] },
+  { word:"Irrelevant to", pos:"phrase", defs:["Not connected or applicable to the matter at hand; not relevant.","Lacking importance, significance, or bearing on a situation."], ex:["His comments were irrelevant to the discussion.","The details of her personal life were irrelevant to the work decision."] },
+  { word:"Tenuous", pos:"adjective", defs:["Thin, weak, or flimsy; lacking substance or strength.","Uncertain, doubtful, or vague."], ex:["The tenuous thread barely held the weight of the artwork.","The evidence against the suspect was tenuous at best."] },
+  { word:"Disorienting", pos:"adjective", defs:["Causing confusion, disorientation, or a loss of sense of direction.","Confusing someone so they lose their bearings."], ex:["The maze of narrow streets was disorienting.","The rotating room at the amusement park disoriented the riders."] },
+  { word:"Nuanced", pos:"adjective", defs:["Having subtle differences or variations; characterized by delicate distinctions.","Showing or requiring careful consideration; subtle or refined."], ex:["The professor gave a nuanced analysis of the historical event.","The artist's nuanced brushstrokes brought out intricate details."] },
+  { word:"Widespread", pos:"adjective", defs:["Existing or happening over a large area or among many people.","Widely known or accepted; prevalent."], ex:["The flu outbreak became widespread, affecting multiple cities.","Social media has become a widespread means of communication."] },
+  { word:"Careful", pos:"adjective", defs:["Taking care or paying attention to avoid potential harm, danger, or mistakes.","Showing or requiring thoroughness and precision; meticulous."], ex:["The surgeon performed the procedure with careful precision.","The detective conducted a careful investigation."] },
+  { word:"Unintended", pos:"adjective", defs:["Not planned or deliberate; happening by accident or without intent.","Not anticipated or expected; unforeseen."], ex:["The joke had unintended consequences, offending a group of people.","The construction noise was an unintended disruption."] },
+  { word:"Infrequent", pos:"adjective", defs:["Not occurring or happening often; rare or uncommon.","Happening at irregular intervals; sporadic."], ex:["The remote village had infrequent visitors.","The company's infrequent meetings hurt coordination."] },
+  { word:"Acknowledged", pos:"adjective", defs:["Accepted or recognized as true, valid, or existing.","Admitted or confessed to be true; recognized as having a particular status."], ex:["The scientist's research was widely acknowledged.","The actor was acknowledged for his outstanding performance."] },
+  { word:"Ensured", pos:"verb", defs:["Made certain that something will happen or be the case.","Made something certain to happen."], ex:["The project manager ensured all team members received training.","The warranty policy ensured customers received replacements if needed."] },
+  { word:"Denied", pos:"verb", defs:["Refused to admit or acknowledge the truth or existence of something.","Refused to give or grant something requested or desired."], ex:["The suspect denied any involvement in the crime.","The hotel denied the guest's request for a late check-out."] },
+  { word:"Underestimated", pos:"verb", defs:["To think or guess something is smaller, less important, or less likely to succeed than it really is.","To make a judgment that is lower than the actual amount, value, or importance."], ex:["The team underestimated the difficulty of the hiking trail.","The company underestimated demand for their new product."] },
+  { word:"Implement", pos:"verb", defs:["To put a decision, plan, or agreement into effect or action.","To provide a practical means for accomplishing something."], ex:["The management implemented a new software system.","New regulations were implemented for better safety standards."] },
+  { word:"Presume", pos:"verb", defs:["To suppose that something is the case based on probability or conjecture.","To take for granted that something is the case without definite proof."], ex:["I presume the meeting will be postponed due to the snowstorm.","The judge reminded the jury not to presume the defendant's guilt."] },
+  { word:"Improvise", pos:"verb", defs:["To create or perform something spontaneously without prior preparation.","To make, provide, or do something using whatever is available at the moment."], ex:["The musician improvised a guitar solo during the live performance.","With limited ingredients, the chef had to improvise a new recipe."] },
+  { word:"Mimic", pos:"verb", defs:["To imitate or copy the actions, speech, or appearance of someone or something.","To resemble or simulate the characteristics or qualities of something else."], ex:["The parrot mimicked its owner's words.","The robot's design mimics the movements of a human."] },
+  { word:"Obscure", pos:"adjective / verb", defs:["Not known to many people; difficult to understand or unclear.","To make something difficult to see, hear, or understand."], ex:["The meaning of the ancient hieroglyphics remains obscure.","The fog obscured the view of the mountains."] },
+  { word:"Ornamental", pos:"adjective", defs:["Describing objects or decorations that are beautiful rather than useful.","Serving as a decoration or adornment."], ex:["The garden was filled with ornamental statues and fountains.","The cake was adorned with ornamental icing and edible flowers."] },
+  { word:"Indecipherable", pos:"adjective", defs:["Impossible or very difficult to read or understand.","Not clear or understandable in meaning."], ex:["The handwriting on the old document was indecipherable.","The message written in code remained indecipherable."] },
+  { word:"Intricate", pos:"adjective", defs:["Having many small parts or details that are carefully arranged or combined.","Difficult to understand or deal with because of complexity."], ex:["The artist's painting featured intricate patterns and delicate brushwork.","Solving the intricate puzzle required patience and concentration."] },
+  { word:"Experiment with", pos:"phrase", defs:["To try or test something new or different to see what results it produces.","To explore or play around with ideas, techniques, or materials in a creative manner."], ex:["The chef likes to experiment with unique flavor combinations.","The musician enjoys experimenting with various musical genres."] },
+  { word:"Adhere to", pos:"phrase", defs:["To act in accordance with or follow a rule, principle, agreement, or belief.","To stick or remain attached to a surface or substance."], ex:["The company strictly adheres to its quality control standards.","The glue will adhere to the paper once it dries."] },
+  { word:"Improve on", pos:"phrase", defs:["To make something better than before or enhance its quality, performance, or value.","To surpass or exceed in quality, skill, or achievement."], ex:["The new software version improves on the previous by adding features.","The gymnast improved on her previous score with a flawless routine."] },
+  { word:"Grapple with", pos:"phrase", defs:["To struggle with or try to overcome a difficult problem or situation.","To engage in a physical struggle or wrestle with someone or something."], ex:["The company is grappling with financial difficulties.","The two wrestlers grappled with each other in the championship."] },
+  { word:"Surmise", pos:"verb", defs:["To guess or speculate about something without having all the information or evidence.","To form an opinion or conclusion based on incomplete or uncertain evidence."], ex:["She surmised he must have forgotten about the meeting.","The detective surmised the thief must have entered through the back door."] },
+  { word:"Contrive", pos:"verb", defs:["To plan or scheme cleverly and skillfully.","To create or bring about by deliberate planning or inventiveness."], ex:["The students contrived a plan to sneak out of school.","The chef contrived a new recipe using unconventional ingredients."] },
+  { word:"Question", pos:"verb / noun", defs:["To ask for information or seek clarification about something.","To express doubt or uncertainty about something."], ex:["She questioned him about his whereabouts that night.","The results questioned the validity of the previous findings."] },
+  { word:"Regret", pos:"verb", defs:["To feel sadness, remorse, or disappointment about something that happened.","To wish that a particular situation had not happened."], ex:["He regretted not taking the opportunity when it was presented.","I regret telling her the secret because it caused trouble."] },
+  { word:"Complementary", pos:"adjective", defs:["Combining well together and enhancing each other's qualities.","Providing something that is lacking or needed to complete a whole."], ex:["The wine's fruity flavor was complementary to the rich dish.","The new employee's skills were complementary to the team's expertise."] },
+  { word:"Unknown", pos:"adjective", defs:["Not familiar or recognized; not known or identified.","Not established or determined; uncertain."], ex:["The artist behind the painting remains unknown.","The outcome of the negotiation is still unknown."] },
+  { word:"Disparate", pos:"adjective", defs:["Fundamentally different or distinct in nature, kind, or quality.","Lacking any obvious or meaningful connection or similarity."], ex:["The two cultures had disparate views on marriage and family.","The movie consisted of disparate scenes that didn't fit together."] },
+  { word:"Interchangeable", pos:"adjective", defs:["Capable of being used or exchanged in place of each other.","Similar or identical in effect or meaning."], ex:["The two words are interchangeable in this context.","In this recipe, baking powder and baking soda are essentially interchangeable."] },
+  { word:"Attach", pos:"verb", defs:["To join or fasten something to something else.","To associate oneself or become associated with something."], ex:["Please attach the document to your email.","She decided to attach herself to the new project."] },
+  { word:"Quarrel about", pos:"phrase", defs:["To have a heated argument or disagreement concerning a particular issue."], ex:["The siblings quarreled about who should choose the movie."] },
+  { word:"Paucity of", pos:"phrase", defs:["A small or insufficient amount; scarcity or lack of something.","A scarcity or lack of quality; meagerness."], ex:["The paucity of evidence made it difficult to build a strong case.","The restaurant's paucity of flavors disappointed the food critic."] },
+  { word:"Profusion of", pos:"phrase", defs:["An abundance or large quantity of something.","A large or excessive amount or number of something."], ex:["The garden was filled with a profusion of colorful flowers.","The store had a profusion of options for customers to choose from."] },
+  { word:"Verisimilitude in", pos:"phrase", defs:["The appearance or semblance of truth; the quality of seeming to be true or real.","The quality of appearing to be real or lifelike."], ex:["The movie's attention to detail added to its verisimilitude.","The artist's painting captured the verisimilitude of a sunset."] },
+  { word:"Collect", pos:"verb", defs:["To bring or gather together things, typically of the same type.","To receive payment for and store money in a particular place."], ex:["The children were asked to collect leaves for their art project.","The cashier collected the payment from the customer."] },
+  { word:"Follow", pos:"verb", defs:["To go or come after someone so as to keep track or observe.","To understand, accept, or comply with someone's ideas, instructions, or advice."], ex:["The detective followed the suspect through the crowded streets.","It's important to follow safety guidelines when operating heavy machinery."] },
+  { word:"Replace", pos:"verb", defs:["To take the place of someone or something by acting as a substitute.","To provide or find a substitute for something that is broken or old."], ex:["The new employee will replace the retiring manager.","We need to replace the light bulb in the hallway."] },
+  { word:"Reflect", pos:"verb", defs:["To think carefully and for a long period about something; to consider.","To show or be a sign of a particular quality, ability, or feeling."], ex:["After the meeting, she took time to reflect on the decisions made.","His artwork reflects his deep understanding of nature."] },
+  { word:"Receive", pos:"verb", defs:["To get or be given something.","To experience a particular reaction or feeling."], ex:["I received a lovely birthday present from my best friend.","The news of her promotion was received with excitement."] },
+  { word:"Recognizable", pos:"adjective", defs:["Able to be identified or recognized based on previous knowledge or distinctive features.","Clearly noticeable or distinct enough to be identified easily."], ex:["The actor's face was so recognizable people asked for autographs.","The company logo is highly recognizable due to its iconic design."] },
+  { word:"Evaluate", pos:"verb", defs:["To judge or assess the quality, value, or significance of someone or something.","To carefully examine and analyze data or evidence to form an opinion."], ex:["The teacher took time to evaluate each student's performance.","The committee was tasked to evaluate the feasibility of the project."] },
+  { word:"Intriguing", pos:"adjective", defs:["Arousing curiosity or interest; fascinating or captivating.","Causing a sense of mystery or puzzlement; mysterious or enigmatic."], ex:["The detective was drawn to the intriguing mystery.","The letter contained an intriguing message about hidden treasure."] },
+  { word:"Significant", pos:"adjective", defs:["Having importance, relevance, or consequence; noteworthy or meaningful.","Having a considerable or notable effect or impact."], ex:["The discovery of a new species is a significant event.","The decrease in unemployment is a significant indicator of improvement."] },
+  { word:"Useful", pos:"adjective", defs:["Serving a practical purpose; able to be used effectively.","Providing assistance or benefit; advantageous or valuable."], ex:["The new smartphone app is incredibly useful for organizing tasks.","Learning a foreign language can be useful for career opportunities."] },
+  { word:"Substantial", pos:"adjective", defs:["Considerable in quantity, size, or importance; significant or sizable.","Having a strong or sturdy build; solid or robust."], ex:["The company made a substantial profit increase this year.","The old oak tree had substantial branches that provided shade."] },
+  { word:"Satisfying", pos:"adjective", defs:["Producing a feeling of contentment, fulfillment, or gratification.","Meeting or fulfilling expectations, requirements, or desires."], ex:["Completing a challenging puzzle gave a satisfying sense of accomplishment.","The restaurant served a satisfying meal that left customers pleased."] },
+  { word:"Unimportant", pos:"adjective", defs:["Lacking significance, relevance, or consequence; not worthy of attention.","Having little or no impact or influence on a particular situation."], ex:["The minor grammatical errors in the email were unimportant.","Her opinion on the matter was unimportant and didn't sway the decision."] },
+  { word:"Appropriate", pos:"adjective", defs:["Suitable or right for a particular purpose, person, or situation.","To take something, especially without permission, for your own use."], ex:["It would be appropriate to wear formal attire to the wedding.","He appropriated my pen without asking."] },
+  { word:"Produce", pos:"verb / noun", defs:["To make or create something by combining materials, parts, or elements.","Fresh fruits and vegetables grown for the purpose of being sold."], ex:["The factory produces cars on a large scale.","The farmer's market offers a wide variety of fresh produce."] },
+  { word:"Deny", pos:"verb", defs:["To say that something is not true or that you do not believe or accept it.","To refuse to give or provide something to someone."], ex:["She denied all the allegations made against her.","The bank denied him a loan due to his poor credit history."] },
+];
+
+// ===================== STATE =====================
+let fcIndex = 0;
+let fcFlipped = false;
+let known = new Set();
+let quizIndex = 0;
+let quizScore = 0;
+let quizOrder = [];
+let answered = false;
+let quizTotal = 0;
+
+// ===================== UTILS =====================
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function updateStats() {
+  document.getElementById('stat-known').textContent = known.size + ' known';
+  document.getElementById('stat-quiz').textContent = quizTotal + ' quizzed';
+}
+
+// ===================== TABS =====================
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(name+'-panel').classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'list') renderList();
+  if (name === 'quiz' && quizOrder.length === 0) startQuiz();
+}
+
+// ===================== FLASHCARDS =====================
+function renderFC() {
+  const w = WORDS[fcIndex];
+  document.getElementById('fc-num').textContent = `WORD ${String(fcIndex+1).padStart(2,'0')}`;
+  document.getElementById('fc-word').textContent = w.word;
+  document.getElementById('fc-pos').textContent = w.pos;
+  document.getElementById('fc-def').textContent = w.defs[0];
+  document.getElementById('fc-example').textContent = '"' + w.ex[0] + '"';
+  document.getElementById('fc-counter').textContent = `${fcIndex+1} / 100`;
+  const pct = Math.round(((fcIndex+1)/100)*100);
+  document.getElementById('fc-pct').textContent = pct + '%';
+  document.getElementById('fc-bar').style.width = pct + '%';
+  // reset flip
+  if (fcFlipped) {
+    document.getElementById('fc-card').classList.remove('flipped');
+    fcFlipped = false;
+  }
+}
+
+function flipCard() {
+  fcFlipped = !fcFlipped;
+  document.getElementById('fc-card').classList.toggle('flipped', fcFlipped);
+}
+
+function navigate(dir) {
+  fcIndex = (fcIndex + dir + 100) % 100;
+  renderFC();
+}
+
+function markKnown(yes) {
+  if (yes) known.add(fcIndex);
+  else known.delete(fcIndex);
+  updateStats();
+  navigate(1);
+}
+
+// ===================== QUIZ =====================
+function startQuiz() {
+  quizOrder = shuffle([...Array(100).keys()]);
+  quizIndex = 0;
+  quizScore = 0;
+  answered = false;
+  document.getElementById('quiz-main').style.display = 'block';
+  document.getElementById('score-screen').classList.remove('show');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  if (quizIndex >= quizOrder.length) { showScore(); return; }
+  answered = false;
+  const wi = quizOrder[quizIndex];
+  const w = WORDS[wi];
+  const isDefToWord = Math.random() > 0.5;
+
+  document.getElementById('q-counter').textContent = `Question ${quizIndex+1} / 100`;
+  document.getElementById('q-score').textContent = `Score: ${quizScore}`;
+  const pct = Math.round(((quizIndex)/100)*100);
+  document.getElementById('q-bar').style.width = Math.max(pct,1) + '%';
+  document.getElementById('q-feedback').classList.remove('show','ok','err');
+  document.getElementById('q-next').classList.remove('show');
+
+  let prompt, label;
+  if (isDefToWord) {
+    label = 'Definition → Word';
+    prompt = `<strong>Which word matches this definition?</strong><br>"${w.defs[0]}"`;
+  } else {
+    label = 'Word → Definition';
+    prompt = `What does this word mean?<strong>${w.word}</strong>`;
+  }
+  document.getElementById('q-label').textContent = label;
+  document.getElementById('q-prompt').innerHTML = prompt;
+
+  // build 4 options
+  let wrong = shuffle([...Array(100).keys()].filter(i=>i!==wi)).slice(0,3);
+  let opts = shuffle([wi, ...wrong]);
+  const letters = ['A','B','C','D'];
+  const container = document.getElementById('q-opts');
+  container.innerHTML = '';
+  opts.forEach((oi, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    const optWord = WORDS[oi];
+    btn.innerHTML = `<span class="opt-letter">${letters[idx]}</span>${isDefToWord ? optWord.word : optWord.defs[0]}`;
+    btn.onclick = () => checkAnswer(oi, wi, btn, isDefToWord);
+    container.appendChild(btn);
+  });
+}
+
+function checkAnswer(chosen, correct, btn, isDefToWord) {
+  if (answered) return;
+  answered = true;
+  quizTotal++;
+  const allBtns = document.querySelectorAll('.quiz-opt');
+  allBtns.forEach(b => b.disabled = true);
+
+  const isCorrect = chosen === correct;
+  if (isCorrect) {
+    btn.classList.add('correct');
+    quizScore++;
+  } else {
+    btn.classList.add('wrong');
+    // highlight correct
+    allBtns.forEach(b => {
+      const txt = b.innerText.slice(1).trim();
+      const cw = WORDS[correct];
+      if (isDefToWord && txt === cw.word) b.classList.add('correct');
+      if (!isDefToWord && txt === cw.defs[0]) b.classList.add('correct');
+    });
+  }
+
+  const fb = document.getElementById('q-feedback');
+  fb.classList.add('show', isCorrect ? 'ok' : 'err');
+  fb.textContent = isCorrect
+    ? `✓ Correct! "${WORDS[correct].word}" — ${WORDS[correct].defs[0]}`
+    : `✗ The correct answer was: "${WORDS[correct].word}" — ${WORDS[correct].defs[0]}`;
+
+  document.getElementById('q-next').classList.add('show');
+  document.getElementById('q-score').textContent = `Score: ${quizScore}`;
+  updateStats();
+}
+
+function nextQuestion() {
+  quizIndex++;
+  renderQuestion();
+}
+
+function showScore() {
+  document.getElementById('quiz-main').style.display = 'none';
+  const sc = document.getElementById('score-screen');
+  sc.classList.add('show');
+  const pct = Math.round((quizScore/100)*100);
+  document.getElementById('score-ring').style.setProperty('--pct', pct);
+  document.getElementById('score-pct').textContent = pct + '%';
+  document.getElementById('q-bar').style.width = '100%';
+  const msgs = [
+    [90, "Outstanding! You're SAT-ready! 🏆"],
+    [70, "Great job! A bit more review and you'll ace it! 💪"],
+    [50, "Good effort. Keep practicing! 📚"],
+    [0, "Keep going — repetition is the key to mastery! 🔄"]
+  ];
+  const [,msg] = msgs.find(([t]) => pct >= t);
+  document.getElementById('score-title').textContent = `${quizScore} / 100 Correct`;
+  document.getElementById('score-msg').textContent = msg;
+}
+
+function restartQuiz() {
+  startQuiz();
+}
+
+// ===================== WORD LIST =====================
+function renderList(filter='') {
+  const grid = document.getElementById('word-grid');
+  grid.innerHTML = '';
+  const q = filter.toLowerCase();
+  WORDS.forEach((w, i) => {
+    if (q && !w.word.toLowerCase().includes(q) && !w.defs[0].toLowerCase().includes(q)) return;
+    const card = document.createElement('div');
+    card.className = 'word-card' + (known.has(i) ? ' known' : '');
+    card.innerHTML = `<div class="wc-num">#${String(i+1).padStart(2,'0')}</div>
+      <div class="wc-word">${w.word}</div>
+      <div class="wc-pos">${w.pos}</div>`;
+    card.onclick = () => openModal(i);
+    grid.appendChild(card);
+  });
+}
+
+function filterWords() {
+  renderList(document.getElementById('search-input').value);
+}
+
+function openModal(i) {
+  const w = WORDS[i];
+  document.getElementById('m-word').textContent = w.word;
+  document.getElementById('m-pos').textContent = w.pos;
+  let html = '';
+  w.defs.forEach((d, di) => {
+    html += `<div class="m-def">
+      <div class="m-def-num">Definition ${di+1}</div>
+      <div class="m-def-text">${d}</div>
+      ${w.ex[di] ? `<div class="m-example">"${w.ex[di]}"</div>` : ''}
+    </div>`;
+  });
+  document.getElementById('m-defs').innerHTML = html;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('show');
+  }
+}
+
+// ===================== KEYBOARD =====================
+document.addEventListener('keydown', e => {
+  const fc = document.getElementById('flashcard-panel');
+  if (!fc.classList.contains('active')) return;
+  if (e.key === 'ArrowRight') navigate(1);
+  if (e.key === 'ArrowLeft') navigate(-1);
+  if (e.key === ' ') { e.preventDefault(); flipCard(); }
+});
+
+// ===================== INIT =====================
+renderFC();
+updateStats();
+</script>
+</body>
+</html>
